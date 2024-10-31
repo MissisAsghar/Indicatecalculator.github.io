@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        #calculator {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+            position: relative;
+        }
+        #display {
+            width: 100%;
+            height: 50px;
+            font-size: 24px;
+            text-align: right;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .indicator {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: gray;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            height: 60px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .operator {
+            background-color: #28a745;
+        }
+        .operator:hover {
+            background-color: #218838;
+        }
+        .clear {
+            background-color: #dc3545;
+        }
+        .clear:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<div id="calculator">
+    <div class="indicator" id="indicator"></div>
+    <input type="text" id="display" disabled>
+    <div class="button-grid">
+        <button onclick="clearDisplay()" class="clear">C</button>
+        
+        <button onclick="appendToDisplay('7')">7</button>
+        <button onclick="appendToDisplay('8')">8</button>
+        <button onclick="appendToDisplay('9')">9</button>
+        <button onclick="appendToDisplay('/')">/</button>
+        <button onclick="appendToDisplay('4')">4</button>
+        <button onclick="appendToDisplay('5')">5</button>
+        <button onclick="appendToDisplay('6')">6</button>
+        <button onclick="appendToDisplay('*')" class="operator">*</button>
+        <button onclick="appendToDisplay('1')">1</button>
+        <button onclick="appendToDisplay('2')">2</button>
+        <button onclick="appendToDisplay('3')">3</button>
+        <button onclick="appendToDisplay('-')" class="operator">-</button>
+        <button onclick="appendToDisplay('0')">0</button>
+        <button onclick="appendToDisplay('.')">.</button>
+        <button onclick="calculateResult()" class="operator">=</button>
+        <button onclick="appendToDisplay('+')" class="operator">+</button>
+        <button onclick="calculateTrigonometric('tan')">tan</button>
+        <button onclick="calculateTrigonometric('sin')">sin</button>
+        <button onclick="calculateTrigonometric('cos')">cos</button>
+        <button onclick="calculateSquareRoot()" class="operator">√</button>
+    </div>
+</div>
+
+<audio id="buttonSound" src="https://github.com/MissisAsghar/Indicatecalculator.github.io/blob/90a46a38186d0384eb0d9964813d094713212fd7/Audio/button-1.mp3"></audio>
+<audio id="errorSound" src="https://github.com/MissisAsghar/Indicatecalculator.github.io/blob/90a46a38186d0384eb0d9964813d094713212fd7/Audio/button-1.mp3"></audio> <!-- Add your error sound file -->
+
+<script>
+    const display = document.getElementById('display');
+    const indicator = document.getElementById('indicator');
+    const buttonSound = document.getElementById('buttonSound');
+    const errorSound = document.getElementById('errorSound');
+
+    function playSound(sound) {
+        sound.currentTime = 0; // Restart sound
+        sound.play();
+    }
+
+    function appendToDisplay(value) {
+        display.value += value;
+        playSound(buttonSound); // Play click sound
+        checkInput();
+    }
+
+    function clearDisplay() {
+        display.value = '';
+        indicator.style.backgroundColor = 'gray';
+        playSound(buttonSound); // Play click sound when cleared
+    }
+
+    function calculateResult() {
+        try {
+            const result = new Function('return ' + display.value)();
+            display.value = result;
+            indicator.style.backgroundColor = 'green';
+            playSound(buttonSound); // Play click sound
+        } catch (error) {
+            display.value = 'Error';
+            indicator.style.backgroundColor = 'red';
+            playSound(errorSound); // Play error sound
+            indicator.style.animation = 'blink 0.5s infinite'; // Start blinking
+        }
+    }
+
+    function calculateTrigonometric(func) {
+        try {
+            const angleInDegrees = parseFloat(display.value);
+            if (!isNaN(angleInDegrees)) {
+                const angleInRadians = angleInDegrees * (Math.PI / 180);
+                let result;
+                switch(func) {
+                    case 'sin':
+                        result = Math.sin(angleInRadians);
+                        break;
+                    case 'cos':
+                        result = Math.cos(angleInRadians);
+                        break;
+                    case 'tan':
+                        result = Math.tan(angleInRadians);
+                        break;
+                }
+                display.value = result;
+                indicator.style.backgroundColor = 'green';
+                playSound(buttonSound); // Play click sound
+            } else {
+                display.value = 'Error';
+                indicator.style.backgroundColor = 'red';
+                playSound(errorSound); // Play error sound
+                indicator.style.animation = 'blink 0.5s infinite'; // Start blinking
+            }
+        } catch (error) {
+            display.value = 'Error';
+            indicator.style.backgroundColor = 'red';
+            playSound(errorSound); // Play error sound
+            indicator.style.animation = 'blink 0.5s infinite'; // Start blinking
+        }
+    }
+
+    function calculateSquareRoot() {
+        try {
+            const number = parseFloat(display.value);
+            if (!isNaN(number) && number >= 0) {
+                display.value = Math.sqrt(number);
+                indicator.style.backgroundColor = 'green';
+                playSound(buttonSound); // Play click sound
+            } else {
+                display.value = 'Error';
+                indicator.style.backgroundColor = 'red';
+                playSound(errorSound); // Play error sound
+                indicator.style.animation = 'blink 0.5s infinite'; // Start blinking
+            }
+        } catch (error) {
+            display.value = 'Error';
+            indicator.style.backgroundColor = 'red';
+            playSound(errorSound); // Play error sound
+            indicator.style.animation = 'blink 0.5s infinite'; // Start blinking
+        }
+    }
+
+    function checkInput() {
+        const currentExpression = display.value;
+        if (currentExpression.length === 0 || /[\+\-\*\/]$/.test(currentExpression)) {
+            indicator.style.backgroundColor = 'gray';
+            indicator.style.animation = 'none'; // Stop blinking
+        } else {
+            try {
+                new Function('return ' + currentExpression)();
+                indicator.style.backgroundColor = 'green';
+                indicator.style.animation = 'none'; // Stop blinking
+            } catch (error) {
+                indicator.style.backgroundColor = 'red';
+                playSound(errorSound); // Play error sound
+                indicator.style.animation = 'blink 0.5s infinite'; // Start blinking
+            }
+        }
+    }
+	
+    // CSS for blinking effect
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes blink {
+            0% { background-color: red; }
+            50% { background-color: transparent; }
+            100% { background-color: red; }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+
+</body>
